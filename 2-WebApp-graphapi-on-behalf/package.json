@@ -1,0 +1,24 @@
+{
+  "name": "ms-identity-easyauth-sample-ch2",
+  "version": "1.0.0",
+  "description": "A Node.js & Express web app using Azure App Service EasyAuth to sign-in users and call Microsoft Graph",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "author": "derisen",
+  "license": "MIT",
+  "dependencies": {
+    "@microsoft/microsoft-graph-client": "^2.2.1",
+    "bootstrap": "^4.5.3",
+    "ejs": "^3.0.1",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "isomorphic-fetch": "^3.0.0",
+    "method-override": "^3.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}
