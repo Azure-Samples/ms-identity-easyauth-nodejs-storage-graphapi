@@ -33,7 +33,7 @@ You also want to call Microsoft Graph from the web app, as the app (not the sign
 To run this sample, you'll need:
 
 - [Visual Studio Code](https://code.visualstudio.com) for debugging or editing files
-- [Node.js v12](https://nodejs.org) or later
+- [Node.js 12.x](https://nodejs.org) or later
 - An [Azure subscription](https://docs.microsoft.com/azure/guides/developer/azure-developer-guide#understanding-accounts-subscriptions-and-billing) and an [Azure AD tenant](https://docs.microsoft.com/azure/active-directory/develop/quickstart-create-new-tenant) with one or more user accounts in the directory
 
 ### Step 1: Clone or download this repository
@@ -42,7 +42,8 @@ Clone or download this repository. From your shell or command line:
 
 ```console
 git clone https://github.com/Azure-Samples/ms-identity-easyauth-nodejs-storage-graphapi.git
-cd 1-WebApp-storage-managed-identity
+cd ms-identity-easyauth-nodejs-storage-graphapi
+cd 3-WebApp-graphapi-managed-identity
 ```
 
 Run the following command in a terminal to install the project dependencies:
@@ -60,13 +61,13 @@ This project has one WebApp project. To deploy it to Azure App Service, you'll n
 - create a web app
 - publish the web app to Azure
 
-For information on how to do this from Visual Studio, read the [.NET Core quickstart](https://docs.microsoft.com/azure/app-service/quickstart-dotnetcore).  
+For information on how to do this from VS Code using the [App Service Extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureappservice), see the [tutorial](https://docs.microsoft.com/azure/developer/javascript/tutorial/deploy-nodejs-azure-app-service-with-visual-studio-code?tabs=bash).
 
 After you've deployed the web app to Azure, [configure the Azure App Service authentication/authorization module](https://docs.microsoft.com/azure/app-service/scenario-secure-app-authentication-app-service). Also verify that only users in your organization can access the web site.
 
 ### Step 3: Enable managed identity on an app
 
-If you create and publish your web app through Visual Studio, the managed identity was enabled on your app for you. Read this article to learn how to [enable a managed identity on a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage#enable-managed-identity-on-an-app).
+Read this article to learn how to [enable a managed identity on a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage#enable-managed-identity-on-an-app).
 
 ### Step 4: Grant access to Microsoft Graph
 
@@ -74,75 +75,154 @@ When accessing the Microsoft Graph, the managed identity needs to have proper pe
 
 ### Step 5: Visit the web app
 
-Open a browser and navigate to the deployed web app (replace *web-app-name* with the name of your web app): `https://&lt;web-app-name&gt;.azurewebsites.net`
+Open a browser and navigate to the deployed web app (replace *web-app-name* with the name of your web app): `https://web-app-name.azurewebsites.net`
 
 ## About the code
 
-This sample app was created using the [Microsoft.Identity.Web ASP.NET Core wep app template](https://github.com/AzureAD/microsoft-identity-web/wiki#asp-net-core-web-app-and-web-api-project-templates).
+### Add authentication to your web app
 
-### Configure Microsoft.Identity.Web in Startup.cs
+The `handleLogin` controller in *controllers/mainController.js* receives the App Service authentication headers from the incoming request, and then initializes a session variable with the user id, which indicates that the user has successfully signed-in.
 
-The Microsoft.Identity.Web, Microsoft.Identity.Web.UI, and Microsoft.Identity.Web.MicrosoftGraph NuGet packages have been installed in the sample app project.
+```javascript
+exports.handleLogin = (req, res, next) => {
+    const userId = req.headers['x-ms-client-principal-id']; // oid
+    const userName = req.headers['x-ms-client-principal-name']; // upn
 
-In the `public void ConfigureServices(IServiceCollection services)` method, the following lines add support for Microsoft.Identity.Web.
+    if (userId) {
+        // add user info to session
+        req.session.user = {
+            isLoggedIn: true,
+            id: userId,
+            name: userName
+        };
+        req.session.save();
 
-```csharp
-services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
+        // redirect to home page
+        res.redirect('/');
+    } else {
+        // redirect to home page
+        res.redirect('/');
+    }
+};
 ```
 
-Note: for this scenario, you *do not* need to configure the *AzureAd* or *GraphBeta* section settings in the *appsettings.json* file.
+In *routes/mainRoutes.js*, a custom middleware named `isLoggedIn` checks the user's session variable to make sure the user is still signed in during route transitions:
 
-Also in the `public void ConfigureServices(IServiceCollection services)` method, call `AddMicrosoftIdentityUI()` in order to add sign-in / sign-out options in the *Pages/Shared/_LoginPartial.cshtml* file.
-
-```csharp
-services.AddRazorPages()
-    .AddMvcOptions(options => {})
-    .AddMicrosoftIdentityUI();
+```javascript
+// ensure the user is logged in
+function isLoggedIn(req, res, next) {
+    if (!req.session.user['isLoggedIn']) {
+        return res.redirect('/login');
+    }
+    next();
+}
 ```
 
-### Call Microsoft Graph as the app
+When the user selects the sign-out button on the navigation bar, the `handleLogout` controller wipes clean the user's session variable, and redirects the app to home page:
 
-The call to Microsoft Graph is performed in the *Pages/Graph-MSI/Index.cshtml.cs* file, in the `public async Task OnGetAsync()` method. The DefaultAzureCredential class is used to get a token credential for your code to authorize requests to Azure Storage. Create an instance of the DefaultAzureCredential class, which uses the managed identity to fetch tokens and attach them to the service client. The following code example gets the authenticated token credential and uses it to create a service client object, which gets the users in the group.
+```javascript
+exports.handleLogout = (req, res, next) => {
+    // clear user session
+    req.session.user = { 
+        isLoggedIn: false,  
+        id: null,
+        name: 'Guest'
+    };
 
-```csharp
-// Create the Graph service client with a DefaultAzureCredential which gets an access token using the available Managed Identity
-var credential = new DefaultAzureCredential();
-var token = credential.GetToken(
-    new Azure.Core.TokenRequestContext(
-        new[] { "https://graph.microsoft.com/.default" }));
+    req.session.save();
 
-var accessToken = token.Token;
-var graphServiceClient = new GraphServiceClient(
-    new DelegateAuthenticationProvider((requestMessage) =>
-    {
-        requestMessage
-        .Headers
-        .Authorization = new AuthenticationHeaderValue("bearer", accessToken);
-
-        return Task.CompletedTask;
-    }));
+    // redirect to home page
+    res.redirect('/');
+};
 ```
 
 ### Display name of the signed-in user
 
-When you access the web app running on Azure, you see a "Hello <user-name>!" message and also a sign in/sign out option at the top of the page. The code for this is found in the *Pages/Shared/_LoginPartial.cshtml* file.  The Microsoft.Identity.Web library integrates with the Azure App Service authentication/authorization module. When a user signs in to the web app, Microsoft.Identity.Web gets the user's name and displays it on the page.  The sign in/sign out options are enabled by the Microsoft.Identity.Web.Ui library:
+When you access the web app running on Azure, you see **sign-in/sign-out** and **ID** buttons at the top of the page. The ID page displays the contents of the singed-in user's ID token via App Service authentication `.auth/me` endpoint. The code for this is found in the *views/home.ejs* file:
 
 ```html
-@if (User.Identity.IsAuthenticated)
-{
-        <li class="nav-item">
-            <span class="navbar-text text-dark">Hello @User.Identity.Name!</span>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
-        </li>
+<html>
+<head>
+    <title>ID</title>
+</head>
+
+<body>
+
+    <%- include('includes/navbar', {user: user}); %>
+
+        <div class="table-area-div">
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Claim</th>
+                        <th scope="col">Value</th>
+                    </tr>
+                </thead>
+                <tbody id="claims-table">
+                </tbody>
+            </table>
+        </div>
+
+        <% if(user.isLoggedIn) { %>
+            <script>
+                fetch('https://derisen-easyauth-nodejs.azurewebsites.net/.auth/me')
+                    .then(response => response.json())
+                    .then(data => {
+                        data[0].user_claims.forEach((item) => {
+                            const tableRow = document.createElement("tr");
+                            tableRow.innerHTML = `<td>${item.typ}</td><td>${item.val}</td>`;
+                            document.getElementById("claims-table").appendChild(tableRow);
+                        })
+                    }).catch(error => {
+                        console.log(error);
+                    });
+            </script>
+            <% } %>
+</body>
+</html>
+```
+
+### Call Microsoft Graph as the app
+
+The call to Microsoft Graph is performed in the *controllers/graphController.js* file `getUsersPage` controller. The `DefaultAzureCredential` class from [@azure/identity](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/identity/identity/README.md) package is used to get a token credential for your code to authorize requests to Azure Storage. Create an instance of the `DefaultAzureCredential` class, which uses the managed identity to fetch tokens and attach them to the service client. The following code example gets the authenticated token credential and uses it to create a service client object, which gets the users in the group.
+
+```javascript
+const graphHelper = require('../utils/graphHelper');
+const { DefaultAzureCredential } = require("@azure/identity");
+
+exports.getUsersPage = async(req, res, next) => {
+
+    const defaultAzureCredential = new DefaultAzureCredential();
+    
+    try {
+        const tokenResponse = await defaultAzureCredential.getToken("https://graph.microsoft.com/.default");
+
+        const graphClient = graphHelper.getAuthenticatedClient(tokenResponse.token);
+
+        const users = await graphClient
+            .api('/users')
+            .get();
+
+        res.render('users', { user: req.session.user, users: users });   
+    } catch (error) {
+        next(error);
+    }
 }
-else
-{
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
-        </li>
+```
+
+To query Microsoft Graph, the sample uses the [Microsoft Graph JavaScript SDK](https://github.com/microsoftgraph/msgraph-sdk-javascript). The code for this is located in **utils/graphHelper.js**:
+
+```javascript
+getAuthenticatedClient = (accessToken) => {
+    // Initialize Graph client
+    const client = graph.Client.init({
+        // Use the provided access token to authenticate requests
+        authProvider: (done) => {
+            done(null, accessToken);
+        }
+    });
+
+    return client;
 }
 ```
 

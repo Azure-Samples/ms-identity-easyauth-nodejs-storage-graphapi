@@ -20,7 +20,7 @@ products:
 
 ### Overview
 
-This sample demonstrates an Node.js & Express web app that uses authentication to limit access to users in your organization​ and then calls Azure storage as the web app (not the signed-in user). The web app authenticates users and also uploads, displays, and deletes text blobs in Azure storage. This sample is a companion to the [Access Azure Storage from a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage) tutorial on docs.microsoft.com.
+This sample demonstrates a Node.js & Express web app that uses authentication to limit access to users in your organization​ and then calls Azure storage as the web app (not as the signed-in user). The web app authenticates users and also uploads, displays, and deletes text blobs in Azure storage. This sample is a companion to the [Access Azure Storage from a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage) tutorial on **docs.microsoft.com**.
 
 ### Scenario
 
@@ -44,6 +44,7 @@ Clone or download this repository. From your shell or command line:
 
 ```console
 git clone https://github.com/Azure-Samples/ms-identity-easyauth-nodejs-storage-graphapi.git
+ms-identity-easyauth-nodejs-storage-graphapi
 cd 1-WebApp-storage-managed-identity
 ```
 
@@ -61,36 +62,36 @@ Every storage account must belong to an Azure resource group. A resource group i
 
 This article shows how to [create a new resource group, a storage account, and a Blob Storage container](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage#create-a-storage-account-and-blob-storage-container).
 
-Make sure you take note of the storage account name and the Blob Storage container name, which you will need in the next step.
+Make sure you take note of the storage account name and the Blob Storage container name, which you will need in step (4).
 
-### Step 3: Configure the sample to use your Azure storage account and blob container
+### Step 3: Deploy the web app and configure App Service authentication
 
-In Visual Studio, open the *appsettings.json* file.  In the *AzureStorageConfig* section, update the *AccountName* and *ContainerName* settings with the values from the previous step.
-
-```json
-"AzureStorageConfig": {
-    "AccountName": "<storage-account-name>",
-    "ContainerName": "<blob-container-name>"
-
-  }
-```
-
-### Step 4: Deploy the web app and configure App Service authentication
-
-This project has one WebApp project. To deploy it to Azure App Service, you'll need to:
+This project has one web app project. To deploy it to Azure App Service, you'll need to:
 
 - configure a deployment user
 - create an Azure App Service plan
 - create a web app
 - publish the web app to Azure
 
-For information on how to do this from Visual Studio, read the [.NET Core quickstart](https://docs.microsoft.com/azure/app-service/quickstart-dotnetcore). Use the same resource group that you used in step 2 instead of creating a new resource group.
+For information on how to do this from VS Code using the [App Service Extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureappservice), see the [tutorial](https://docs.microsoft.com/azure/developer/javascript/tutorial/deploy-nodejs-azure-app-service-with-visual-studio-code?tabs=bash). Use the same resource group that you used in step 2 instead of creating a new resource group.
 
 After you've deployed the web app to Azure, [configure the Azure App Service authentication/authorization module](https://docs.microsoft.com/azure/app-service/scenario-secure-app-authentication-app-service).  Also verify that only users in your organization can access the web site.
 
+### Step 4: Configure the App Service to use your Azure storage account and blob container
+
+Now you need to add environment variables to the App Service where you deployed your web app.
+
+1. In the [Azure portal](https://portal.azure.com), search for and select **App Service**, and then select your app.
+1. Select **Configuration** blade on the left, then select **New Application Settings**.
+1. Add the following variables (key-value pairs):
+    1. **STORAGE_ACCOUNT_NAME**: the name of the storage account you created in step (2)
+    1. **BLOB_CONTAINER_NAME**: the name of the container blob you created in step (2)
+
+Wait for a few minutes for your changes on **App Service** to take effect.
+
 ### Step 5: Enable managed identity on an app
 
-If you create and publish your web app through Visual Studio, the managed identity was enabled on your app for you. Read this article to learn how to [enable a managed identity on a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage#enable-managed-identity-on-an-app).
+Read this article to learn how to [enable a managed identity on a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage#enable-managed-identity-on-an-app).
 
 ### Step 6: Grant access to the storage account
 
@@ -98,91 +99,152 @@ You need to grant your web app access to the storage account before you can crea
 
 ### Step 7: Visit the web app
 
-Open a browser and navigate to the deployed web app (replace *web-app-name* with the name of your web app): `https://&lt;web-app-name&gt;.azurewebsites.net/`
+Open a browser and navigate to the deployed web app (replace *web-app-name* with the name of your web app): `https://web-app-name.azurewebsites.net/`
 
 ## About the code
 
-This sample app was created using the [Microsoft.Identity.Web ASP.NET Core wep app template](https://github.com/AzureAD/microsoft-identity-web/wiki#asp-net-core-web-app-and-web-api-project-templates).
+### Add authentication to your web app
 
-### Configure Microsoft.Identity.Web and Azure Storage in Startup.cs
+The `handleLogin` controller in *controllers/mainController.js* receives the App Service authentication headers from the incoming request, and then initializes a session variable with the user id, which indicates that the user has successfully signed-in.
 
-The Microsoft.Identity.Web, Microsoft.Identity.Web.UI, and Azure.Storage.Blobs NuGet packages have been installed in the sample app project.
+```javascript
+exports.handleLogin = (req, res, next) => {
+    const userId = req.headers['x-ms-client-principal-id']; // oid
+    const userName = req.headers['x-ms-client-principal-name']; // upn
 
-In the ```public void ConfigureServices(IServiceCollection services)``` method, the following lines add support for Azure storage blobs and Microsoft.Identity.Web.
+    if (userId) {
+        // add user info to session
+        req.session.user = {
+            isLoggedIn: true,
+            id: userId,
+            name: userName
+        };
+        req.session.save();
 
-```csharp
-services.AddTransient<CommentsContext>();
-services.Configure<AzureStorageConfig>(Configuration.GetSection("AzureStorageConfig"));
-services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
+        // redirect to home page
+        res.redirect('/');
+    } else {
+        // redirect to home page
+        res.redirect('/');
+    }
+};
 ```
 
-Note: for this scenario, you *do not* need to configure the *AzureAd* section settings in the *appsettings.json* file.
+In *routes/mainRoutes.js*, a custom middleware named `isLoggedIn` checks the user's session variable to make sure the user is still signed in during route transitions:
 
-Also in the ```public void ConfigureServices(IServiceCollection services)``` method, call AddMicrosoftIdentityUI() in order to add sign-in / sign-out options in the *Pages/Shared/_LoginPartial.cshtml* file.
-
-```csharp
-services.AddRazorPages()
-    .AddMvcOptions(options => {})
-    .AddMicrosoftIdentityUI();
-```
-
-### Call storage using managed identities
-
-The methods for uploading, getting, and deleting blobs are in *Helpers/StorageHelper.cs*. The DefaultAzureCredential class is used to get a token credential for your code to authorize requests to Azure Storage. Create an instance of the DefaultAzureCredential class, which uses the managed identity to fetch tokens and attach them to the service client. The following code example gets the authenticated token credential and uses it to create a service client object, which uploads a new blob.
-
-```csharp
-static public async Task UploadBlob(string accountName, string containerName, string blobName, string blobContents)
-{
-    // Construct the blob container endpoint from the arguments.
-    string containerEndpoint = string.Format("https://{0}.blob.core.windows.net/{1}",
-                                                accountName,
-                                                containerName);
-
-    // Get a credential and create a client object for the blob container.
-    BlobContainerClient containerClient = new BlobContainerClient(new Uri(containerEndpoint),
-                                                                    new DefaultAzureCredential());
-
-
-    try
-    {
-        // Create the container if it does not exist.
-        await containerClient.CreateIfNotExistsAsync();
-
-        // Upload text to a new block blob.
-        byte[] byteArray = Encoding.ASCII.GetBytes(blobContents);
-
-        using (MemoryStream stream = new MemoryStream(byteArray))
-        {
-            await containerClient.UploadBlobAsync(blobName, stream);
-        }
+```javascript
+// ensure the user is logged in
+function isLoggedIn(req, res, next) {
+    if (!req.session.user['isLoggedIn']) {
+        return res.redirect('/login');
     }
-    catch (Exception e)
-    {
-        throw e;
-    }
+    next();
 }
+```
+
+When the user selects the sign-out button on the navigation bar, the `handleLogout` controller wipes clean the user's session variable, and redirects the app to home page:
+
+```javascript
+exports.handleLogout = (req, res, next) => {
+    // clear user session
+    req.session.user = { 
+        isLoggedIn: false,  
+        id: null,
+        name: 'Guest'
+    };
+
+    req.session.save();
+
+    // redirect to home page
+    res.redirect('/');
+};
 ```
 
 ### Display name of the signed-in user
 
-When you access the web app running on Azure, you see a "Hello <user-name>!" message and also a sign in/sign out option at the top of the page.  The code for this is found in the *Pages/Shared/_LoginPartial.cshtml* file.  The Microsoft.Identity.Web library integrates with the Azure App Service authentication/authorization module.  When a user signs in to the web app, Microsoft.Identity.Web gets the user's name and displays it on the page.  The sign in/sign out options are enabled by the Microsoft.Identity.Web.Ui library:
+When you access the web app running on Azure, you see **sign-in/sign-out** and **ID** buttons at the top of the page. The ID page displays the contents of the singed-in user's ID token via App Service authentication `.auth/me` endpoint. The code for this is found in the *views/home.ejs* file:
 
 ```html
-@if (User.Identity.IsAuthenticated)
-{
-        <li class="nav-item">
-            <span class="navbar-text text-dark">Hello @User.Identity.Name!</span>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
-        </li>
+<html>
+<head>
+    <title>ID</title>
+</head>
+
+<body>
+
+    <%- include('includes/navbar', {user: user}); %>
+
+        <div class="table-area-div">
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Claim</th>
+                        <th scope="col">Value</th>
+                    </tr>
+                </thead>
+                <tbody id="claims-table">
+                </tbody>
+            </table>
+        </div>
+
+        <% if(user.isLoggedIn) { %>
+            <script>
+                fetch('https://derisen-easyauth-nodejs.azurewebsites.net/.auth/me')
+                    .then(response => response.json())
+                    .then(data => {
+                        data[0].user_claims.forEach((item) => {
+                            const tableRow = document.createElement("tr");
+                            tableRow.innerHTML = `<td>${item.typ}</td><td>${item.val}</td>`;
+                            document.getElementById("claims-table").appendChild(tableRow);
+                        })
+                    }).catch(error => {
+                        console.log(error);
+                    });
+            </script>
+            <% } %>
+</body>
+</html>
+```
+
+### Call storage using managed identities
+
+The methods for uploading, getting, and deleting blobs are in *utils/StorageHelper.js*. The `DefaultAzureCredential` class from [@azure/identity](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/identity/identity/README.md) package is used to get a token credential for your code to authorize requests to Azure Storage. Create an instance of the `DefaultAzureCredential` class, which uses the managed identity to fetch tokens and attach them to the service client. The following code example gets the authenticated token credential and uses it to create a service client object, which uploads a new blob.
+
+```javascript
+async function uploadBlob(accountName, containerName, blobName, blobContents) {
+    const blobServiceClient = new BlobServiceClient(
+        `https://${accountName}.blob.core.windows.net`,
+        defaultAzureCredential
+    );
+
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+
+    try {
+        await containerClient.createIfNotExists();
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+        const uploadBlobResponse = await blockBlobClient.upload(blobContents, blobContents.length);
+        console.log(`Upload block blob ${blobName} successfully`, uploadBlobResponse.requestId);
+    } catch (error) {
+        console.log(error);
+    }
 }
-else
-{
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
-        </li>
+```
+
+The *StorageHelper.js* is used in the *controllers/storageController.js* as shown below:
+
+```javascript
+const storageClient = require('../utils/storageHelper');
+
+exports.postCommentsPage = async(req, res, next) => {
+    const name = req.body.name;
+    const content = req.body.content;
+
+    try {
+        await storageClient.uploadBlob(accountName, containerName, name, content);
+        res.redirect('/comments');
+    } catch (error) {
+        next(error);
+    }
 }
 ```
 
