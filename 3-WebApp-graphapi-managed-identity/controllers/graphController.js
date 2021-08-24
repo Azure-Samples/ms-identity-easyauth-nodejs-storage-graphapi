@@ -1,3 +1,7 @@
+require('dotenv').config();
+
+const appServiceName = process.env.APP_SERVICE_NAME;
+
 const graphHelper = require('../utils/graphHelper');
 const { DefaultAzureCredential } = require("@azure/identity");
 
@@ -14,7 +18,7 @@ exports.getUsersPage = async(req, res, next) => {
             .api('/users')
             .get();
 
-        res.render('users', { user: req.session.user, users: users });   
+        res.render('users', { user: req.session.user, users: users, appServiceName: appServiceName });   
     } catch (error) {
         next(error);
     }

@@ -1,3 +1,7 @@
+require('dotenv').config();
+
+const appServiceName = process.env.APP_SERVICE_NAME;
+
 const graphHelper = require('../utils/graphHelper');
 
 exports.getProfilePage = async(req, res, next) => {
@@ -9,7 +13,7 @@ exports.getProfilePage = async(req, res, next) => {
             .api('/me')
             .get();
 
-        res.render('profile', { user: req.session.user, profile: profile });   
+        res.render('profile', { user: req.session.user, profile: profile, appServiceName: appServiceName });   
     } catch (error) {
         next(error);
     }

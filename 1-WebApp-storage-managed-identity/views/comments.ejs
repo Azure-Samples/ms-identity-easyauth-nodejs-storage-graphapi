@@ -13,7 +13,7 @@
 
 <body>
 
-    <%- include('includes/navbar', {user: user}); %>
+    <%- include('includes/navbar', {user: user, appServiceName: appServiceName}); %>
 
         <div class="table-area-div">
             <form action='/comments' method='POST'>

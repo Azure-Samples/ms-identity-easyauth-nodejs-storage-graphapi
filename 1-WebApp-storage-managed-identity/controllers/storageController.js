@@ -3,11 +3,12 @@ const storageClient = require('../utils/storageHelper');
 
 const accountName = process.env.STORAGE_ACCOUNT_NAME;
 const containerName = process.env.BLOB_CONTAINER_NAME;
+const appServiceName = process.env.APP_SERVICE_NAME;
 
 exports.getCommentsPage = async(req, res, next) => {
     try {
         const blobs = await storageClient.getBlobs(accountName, containerName);
-        res.render('comments', {user: req.session.user, blobs: blobs});
+        res.render('comments', {user: req.session.user, blobs: blobs, appServiceName: appServiceName});
     } catch (error) {
         next(error);
     }
