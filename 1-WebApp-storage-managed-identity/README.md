@@ -44,14 +44,8 @@ Clone or download this repository. From your shell or command line:
 
 ```console
 git clone https://github.com/Azure-Samples/ms-identity-easyauth-nodejs-storage-graphapi.git
-ms-identity-easyauth-nodejs-storage-graphapi
+cd ms-identity-easyauth-nodejs-storage-graphapi
 cd 1-WebApp-storage-managed-identity
-```
-
-Run the following command in a terminal to install the project dependencies:
-
-```console
-npm install
 ```
 
 ### Step 2: Create a resource group, storage account, and Blob Storage container
@@ -189,7 +183,7 @@ When you access the web app running on Azure, you see **sign-in/sign-out** and *
 
         <% if(user.isLoggedIn) { %>
             <script>
-                fetch('https://derisen-easyauth-nodejs.azurewebsites.net/.auth/me')
+                fetch('https://web-app-name.azurewebsites.net/.auth/me')
                     .then(response => response.json())
                     .then(data => {
                         data[0].user_claims.forEach((item) => {

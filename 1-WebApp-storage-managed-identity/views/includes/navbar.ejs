@@ -3,9 +3,9 @@
     <div class="btn-group ml-auto dropleft">
         <% if (user.isLoggedIn) { %>
             <a class="btn btn-secondary" href="/id" role="button">ID</a>
-            <a class="btn btn-success" href="/.auth/logout?post_logout_redirect_uri=https://derisen-easyauth-nodejs.azurewebsites.net/logout" role="button">Sign-out</a>
+            <a class="btn btn-success" href="/.auth/logout?post_logout_redirect_uri=https://<%=appServiceName%>.azurewebsites.net/logout" role="button">Sign-out</a>
         <% } else { %>
-            <a class="btn btn-secondary" href="/.auth/login/aad?post_login_redirect_url=https://derisen-easyauth-nodejs.azurewebsites.net/login" role="button">Sign-in</a>
+            <a class="btn btn-secondary" href="/.auth/login/aad?post_login_redirect_url=https://<%=appServiceName%>.azurewebsites.net/login" role="button">Sign-in</a>
         <% } %>
     </div>
 </nav>

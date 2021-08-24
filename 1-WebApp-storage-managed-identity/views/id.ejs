@@ -13,7 +13,7 @@
 
 <body>
 
-    <%- include('includes/navbar', {user: user}); %>
+    <%- include('includes/navbar', {user: user, appServiceName: appServiceName}); %>
 
         <div class="table-area-div">
             <table class="table">
@@ -40,7 +40,7 @@
 
         <% if(user.isLoggedIn) { %>
             <script>
-                fetch('https://derisen-easyauth-nodejs.azurewebsites.net/.auth/me')
+                fetch(`https://<%=appServiceName%>.azurewebsites.net/.auth/me`)
                     .then(response => response.json())
                     .then(data => {
                         data[0].user_claims.forEach((item) => {

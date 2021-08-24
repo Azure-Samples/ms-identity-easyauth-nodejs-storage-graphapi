@@ -1,9 +1,13 @@
+require('dotenv').config();
+
+const appServiceName = process.env.APP_SERVICE_NAME;
+
 exports.getHomePage = (req, res, next) => {
-    res.render('home', { user: req.session.user });
+    res.render('home', { user: req.session.user, appServiceName: appServiceName });
 }
 
 exports.getIdPage = (req, res, next) => {
-    res.render('id', { user: req.session.user });
+    res.render('id', { user: req.session.user, appServiceName: appServiceName });
 }
 
 exports.handleLogin = (req, res, next) => {
