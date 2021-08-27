@@ -156,7 +156,7 @@ exports.handleLogout = (req, res, next) => {
 
 ### Display name of the signed-in user
 
-When you access the web app running on Azure, you see **sign-in/sign-out** and **ID** buttons at the top of the page. The ID page displays the contents of the singed-in user's ID token via App Service authentication `.auth/me` endpoint. The code for this is found in the *views/home.ejs* file:
+When you access the web app running on Azure, you see **sign-in/sign-out** and **ID** buttons at the top of the page. The ID page displays the contents of the singed-in user's ID token via App Service authentication `.auth/me` endpoint. The code for this is found in the *views/id.ejs* file:
 
 ```html
 <html>

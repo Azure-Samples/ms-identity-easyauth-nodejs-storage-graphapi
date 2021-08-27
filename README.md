@@ -35,7 +35,7 @@ If you are a Line of Business (LOB) developer, you'd probably want to only sign-
 
 ## Securely access Azure storage on behalf of the web application using managed identities​
 
-In this step, you configure authentication for a web app and [access Azure blob storage as the web app (using managed identities)](https://github.com/Azure-Samples/ms-identity-easyauth-nodejs-storage-graphapi/tree/main/1-WebApp-storage-managed-identity).  
+In this step, you configure authentication for a web app and [access Azure blob storage as the web app (using managed identities)](./1-WebApp-storage-managed-identity/README.md).  
 
 You learn how to:
 
@@ -45,7 +45,7 @@ You learn how to:
 
 ## Access data in Microsoft Graph on behalf of the signed-in user​
 
-In this step, you configure authentication for a web app and [call Microsoft Graph from a secured app on behalf of the signed-in user](https://github.com/Azure-Samples/ms-identity-easyauth-nodejs-storage-graphapi/tree/main/2-WebApp-graphapi-on-behalf).
+In this step, you configure authentication for a web app and [call Microsoft Graph from a secured app on behalf of the signed-in user](./2-WebApp-graphapi-on-behalf/README.md).
 
 You learn how to:
 
@@ -55,7 +55,7 @@ You learn how to:
 
 ## Access data in Microsoft Graph on behalf of the web application using managed identities​
 
-In this step, you configure authentication for a web app and [call Microsoft Graph as the web app (using managed identities)](https://github.com/Azure-Samples/ms-identity-easyauth-nodejs-storage-graphapi/tree/main/3-WebApp-graphapi-managed-identity)
+In this step, you configure authentication for a web app and [call Microsoft Graph as the web app (using managed identities)](./3-WebApp-graphapi-managed-identity/README.md)
 
 You learn how to:
 
