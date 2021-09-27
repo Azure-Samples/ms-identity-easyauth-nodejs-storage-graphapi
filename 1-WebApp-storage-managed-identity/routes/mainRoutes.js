@@ -3,41 +3,39 @@ const express = require('express');
 const mainController = require('../controllers/mainController');
 const storageController = require('../controllers/storageController');
 
-// initialize router
-const router = express.Router();
+module.exports = (msid) => {
+    // initialize router
+    const router = express.Router();
 
-// ensure the user is logged in
-function isLoggedIn(req, res, next) {
-    if (!req.session.user['isLoggedIn']) {
-        return res.redirect('/login');
-    }
-    next();
-}
+    // app routes
+    router.get('/', (req, res, next) => res.redirect('/home'));
 
-// app routes
-router.get('/', (req, res, next) => res.redirect('/home'));
+    router.get('/home', mainController.getHomePage);
 
-router.get('/home', mainController.getHomePage);
+    router.get('/login', msid.signIn({
+        successRedirect: '/home',
+    }));
 
-router.get('/login', mainController.handleLogin);
+    router.get('/logout', msid.signOut({
+        successRedirect: '/home',
+    }));
 
-router.get('/logout', mainController.handleLogout);
+    router.get('/id', msid.isAuthenticated(), mainController.getIdPage);
 
-router.get('/id', isLoggedIn, mainController.getIdPage);
+    router.get('/comments', msid.isAuthenticated(), storageController.getCommentsPage);
 
-router.get('/comments', isLoggedIn, storageController.getCommentsPage);
+    router.post('/comments', msid.isAuthenticated(), storageController.postCommentsPage);
 
-router.post('/comments', isLoggedIn, storageController.postCommentsPage);
+    router.delete('/comments', msid.isAuthenticated(), storageController.deleteCommentsPage);
 
-router.delete('/comments', isLoggedIn, storageController.deleteCommentsPage);
+    // error
+    router.get('/error', (req, res) => res.redirect('/500.html'));
 
-// error
-router.get('/error', (req, res) => res.redirect('/500.html'));
+    // unauthorized
+    router.get('/unauthorized', (req, res) => res.redirect('/401.html'));
 
-// unauthorized
-router.get('/unauthorized', (req, res) => res.redirect('/401.html'));
+    // 404
+    router.get('*', (req, res) => res.status(404).redirect('/404.html'));
 
-// 404
-router.get('*', (req, res) => res.status(404).redirect('/404.html'));
-
-module.exports = router;
+    return router;
+};

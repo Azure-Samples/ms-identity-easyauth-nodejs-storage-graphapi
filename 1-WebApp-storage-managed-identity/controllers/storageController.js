@@ -8,7 +8,7 @@ const appServiceName = process.env.APP_SERVICE_NAME;
 exports.getCommentsPage = async(req, res, next) => {
     try {
         const blobs = await storageClient.getBlobs(accountName, containerName);
-        res.render('comments', {user: req.session.user, blobs: blobs, appServiceName: appServiceName});
+        res.render('comments', {isAuthenticated: req.session.isAuthenticated, blobs: blobs, appServiceName: appServiceName});
     } catch (error) {
         next(error);
     }

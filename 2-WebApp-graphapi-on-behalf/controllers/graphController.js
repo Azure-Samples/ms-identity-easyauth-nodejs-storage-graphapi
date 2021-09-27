@@ -7,13 +7,13 @@ const graphHelper = require('../utils/graphHelper');
 exports.getProfilePage = async(req, res, next) => {
 
     try {
-        const graphClient = graphHelper.getAuthenticatedClient(req.headers['x-ms-token-aad-access-token']);
+        const graphClient = graphHelper.getAuthenticatedClient(req.session.protectedResources["graphAPI"].accessToken);
 
         const profile = await graphClient
             .api('/me')
             .get();
 
-        res.render('profile', { user: req.session.user, profile: profile, appServiceName: appServiceName });   
+        res.render('profile', { isAuthenticated: req.session.isAuthenticated, profile: profile, appServiceName: appServiceName });   
     } catch (error) {
         next(error);
     }

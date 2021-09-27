@@ -10,7 +10,7 @@
     </head>
     <body>
 
-        <%- include('includes/navbar', {user: user, appServiceName: appServiceName}); %>
+        <%- include('includes/navbar', {isAuthenticated: isAuthenticated, appServiceName: appServiceName}); %>
 
         <div class="table-area-div">
             <p>Calling <strong>Microsoft Graph API</strong>...</p>

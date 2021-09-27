@@ -7,6 +7,7 @@ const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const methodOverride = require('method-override');
+const MsIdExpress = require('microsoft-identity-express');
 
 const mainRouter = require('./routes/mainRoutes');
 
@@ -33,29 +34,41 @@ app.use(express.json());
  * Using express-session middleware. Be sure to familiarize yourself with available options
  * and set them as desired. Visit: https://www.npmjs.com/package/express-session
  */
- const sessionConfig = {
+ app.use(session({
     secret: 'ENTER_YOUR_SECRET_HERE',
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false, // set this to true on production
+        secure: true, // set this to true on production
     }
+}));
+
+app.set('trust proxy', 1) // trust first proxy i.e. App Service
+
+const appSettings = {
+    appCredentials: {
+        clientId: process.env.WEBSITE_AUTH_CLIENT_ID, // "ENTER_CLIENT_ID_HERE",
+        tenantInfo: "common", // "ENTER_TENANT_INFO_HERE",
+        clientSecret: process.env.MICROSOFT_PROVIDER_AUTHENTICATION_SECRET // "ENTER_CLIENT_SECRET_HERE",
+    },
+    authRoutes: {
+        redirect: "/.auth/login/aad/callback",
+        error: "/error",
+        unauthorized: "/unauthorized"
+    },
+    protectedResources: {
+        graphAPI: {
+            endpoint: "https://graph.microsoft.com/v1.0/me",
+            scopes: ["User.Read"]
+        },
+    },
 }
 
-if (app.get('env') === 'production') {
-    app.set('trust proxy', 1) // trust first proxy
-    sessionConfig.cookie.secure = true // serve secure cookies
-}
+const msid = new MsIdExpress.WebAppAuthClientBuilder(appSettings)
+                            .build();
 
-app.use(session(sessionConfig));
+app.use(msid.initialize());
 
-app.use((req, res, next) => {
-    if (!req.session.user) {
-        req.session.user = {isLoggedIn: false, name: 'Guest', id: null};
-    }
-    next();
-});
-
-app.use(mainRouter);
+app.use(mainRouter(msid));
 
 app.listen(SERVER_PORT, () => console.log(`Node EasyAuth sample app listening on port ${SERVER_PORT}!`));

@@ -18,7 +18,7 @@ exports.getUsersPage = async(req, res, next) => {
             .api('/users')
             .get();
 
-        res.render('users', { user: req.session.user, users: users, appServiceName: appServiceName });   
+        res.render('users', { isAuthenticated: req.session.isAuthenticated, users: users, appServiceName: appServiceName });   
     } catch (error) {
         next(error);
     }
