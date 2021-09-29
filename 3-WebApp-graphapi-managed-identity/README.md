@@ -33,7 +33,7 @@ You also want to call Microsoft Graph from the web app, as the app (not the sign
 To run this sample, you'll need:
 
 - [Visual Studio Code](https://code.visualstudio.com) for debugging or editing files
-- [Node.js 12.x](https://nodejs.org) or later
+- [Node.js v14](https://nodejs.org) or later
 - An [Azure subscription](https://docs.microsoft.com/azure/guides/developer/azure-developer-guide#understanding-accounts-subscriptions-and-billing) and an [Azure AD tenant](https://docs.microsoft.com/azure/active-directory/develop/quickstart-create-new-tenant) with one or more user accounts in the directory
 
 ### Step 1: Clone or download this repository
@@ -73,105 +73,79 @@ Open a browser and navigate to the deployed web app (replace *web-app-name* with
 
 ## About the code
 
+This sample is built using the [@azure/identity](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/identity/identity/README.md) and [@azure-samples/msal-express-wrapper](https://github.com/Azure-Samples/msal-express-wrapper) packages for authentication and authorization.
+
 ### Add authentication to your web app
 
-The `handleLogin` controller in *controllers/mainController.js* receives the App Service authentication headers from the incoming request, and then initializes a session variable with the user id, which indicates that the user has successfully signed-in.
+The `signIn` middleware in *routes/mainRoutes.js* receives the App Service authentication headers from the incoming request, and then initializes a session variable with the user account, which indicates that the user has successfully signed-in.
 
 ```javascript
-exports.handleLogin = (req, res, next) => {
-    const userId = req.headers['x-ms-client-principal-id']; // oid
-    const userName = req.headers['x-ms-client-principal-name']; // upn
-
-    if (userId) {
-        // add user info to session
-        req.session.user = {
-            isLoggedIn: true,
-            id: userId,
-            name: userName
-        };
-        req.session.save();
-
-        // redirect to home page
-        res.redirect('/');
-    } else {
-        // redirect to home page
-        res.redirect('/');
-    }
-};
+    router.get('/login', msid.signIn({
+        successRedirect: '/home',
+    }));
 ```
 
-In *routes/mainRoutes.js*, a custom middleware named `isLoggedIn` checks the user's session variable to make sure the user is still signed in during route transitions:
+The `isAuthenticated` middleware checks the user's session variable to make sure the user is still signed in during route transitions:
 
 ```javascript
-// ensure the user is logged in
-function isLoggedIn(req, res, next) {
-    if (!req.session.user['isLoggedIn']) {
-        return res.redirect('/login');
-    }
-    next();
-}
+router.get('/id', msid.isAuthenticated(), mainController.getIdPage);
 ```
 
-When the user selects the sign-out button on the navigation bar, the `handleLogout` controller wipes clean the user's session variable, and redirects the app to home page:
+When the user selects the sign-out button on the navigation bar, the `signOut` middleware wipes clean the user's session variable, and redirects the app to home page:
 
 ```javascript
-exports.handleLogout = (req, res, next) => {
-    // clear user session
-    req.session.user = { 
-        isLoggedIn: false,  
-        id: null,
-        name: 'Guest'
-    };
-
-    req.session.save();
-
-    // redirect to home page
-    res.redirect('/');
-};
+    router.get('/logout', msid.signOut({
+        successRedirect: '/home',
+    }));
 ```
 
 ### Display name of the signed-in user
 
-When you access the web app running on Azure, you see **sign-in/sign-out** and **ID** buttons at the top of the page. The ID page displays the contents of the singed-in user's ID token via App Service authentication `.auth/me` endpoint. The code for this is found in the *views/id.ejs* file:
+When you access the web app running on Azure, you see **sign-in/sign-out** and **ID** buttons at the top of the page. The ID page displays the contents of the singed-in user's ID token. To do so, we access the user's account via the session variable, which is populated when the user signs-in. The code for this is found in the *controllers/mainController.js* file:
+
+```javascript
+exports.getIdPage = (req, res, next) => {
+    const claims = {
+        name: req.session.account.idTokenClaims.name,
+        preferred_username: req.session.account.idTokenClaims.preferred_username,
+        oid: req.session.account.idTokenClaims.oid,
+        sub: req.session.account.idTokenClaims.sub
+    };
+
+    res.render('id', { isAuthenticated: req.session.isAuthenticated, appServiceName: appServiceName, claims: claims });
+}
+```
+
+The `claims` object is then displayed on the *views/id.ejs* file:
 
 ```html
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" status="width=device-width, initial-scale=1.0">
     <title>ID</title>
 </head>
-
 <body>
-
-    <%- include('includes/navbar', {user: user}); %>
-
+    <%- include('includes/navbar', {isAuthenticated: isAuthenticated, appServiceName: appServiceName}); %>
         <div class="table-area-div">
-            <table class="table">
+            <table class="table" style="table-layout: fixed">
                 <thead class="thead-dark">
                     <tr>
                         <th scope="col">Claim</th>
                         <th scope="col">Value</th>
                     </tr>
                 </thead>
-                <tbody id="claims-table">
+                <tbody>
+                    <% for (const [key, value] of Object.entries(claims)) { %>
+                        <tr>
+                            <td><%= key %></td>
+                            <td><%= value %></td>
+                        </tr>
+                    <% } %>
                 </tbody>
             </table>
         </div>
-
-        <% if(user.isLoggedIn) { %>
-            <script>
-                fetch('https://web-app-name.azurewebsites.net/.auth/me')
-                    .then(response => response.json())
-                    .then(data => {
-                        data[0].user_claims.forEach((item) => {
-                            const tableRow = document.createElement("tr");
-                            tableRow.innerHTML = `<td>${item.typ}</td><td>${item.val}</td>`;
-                            document.getElementById("claims-table").appendChild(tableRow);
-                        })
-                    }).catch(error => {
-                        console.log(error);
-                    });
-            </script>
-            <% } %>
 </body>
 </html>
 ```

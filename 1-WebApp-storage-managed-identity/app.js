@@ -47,14 +47,14 @@ app.set('trust proxy', 1) // trust first proxy i.e. App Service
 
 const appSettings = {
     appCredentials: {
-        clientId: process.env.WEBSITE_AUTH_CLIENT_ID, // "ENTER_CLIENT_ID_HERE",
-        tenantInfo: "common", // "ENTER_TENANT_INFO_HERE",
-        clientSecret: process.env.MICROSOFT_PROVIDER_AUTHENTICATION_SECRET // "ENTER_CLIENT_SECRET_HERE",
+        clientId: process.env.WEBSITE_AUTH_CLIENT_ID, // Enter the client Id here,
+        tenantInfo: "common", // Enter the tenant info here,
+        clientSecret: process.env.MICROSOFT_PROVIDER_AUTHENTICATION_SECRET // Enter the client secret here,
     },
     authRoutes: {
-        redirect: "/.auth/login/aad/callback",
-        error: "/error",
-        unauthorized: "/unauthorized"
+        redirect: "/.auth/login/aad/callback", // Enter the redirect URI here
+        error: "/error", // enter the relative path to error handling route
+        unauthorized: "/unauthorized" // enter the relative path to unauthorized route
     },
 }
 

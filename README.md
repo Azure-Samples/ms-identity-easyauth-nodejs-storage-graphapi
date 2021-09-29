@@ -71,7 +71,7 @@ You learn how to:
 To run this sample, you'll need:
 
 - [Visual Studio Code](https://code.visualstudio.com/) for debugging or file editing
-- [Node.js 12.x](https://nodejs.org/) or later
+- [Node.js v14](https://nodejs.org/) or later
 - An [Azure subscription](https://docs.microsoft.com/azure/guides/developer/azure-developer-guide#understanding-accounts-subscriptions-and-billing) and an [Azure AD tenant](https://docs.microsoft.com/azure/active-directory/develop/quickstart-create-new-tenant) with one or more user accounts in the directory
 
 ### Installation
