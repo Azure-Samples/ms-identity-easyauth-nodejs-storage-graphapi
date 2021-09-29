@@ -61,7 +61,7 @@ After you've deployed the web app to Azure, [configure the Azure App Service aut
 
 ### Step 3: Enable managed identity on an app
 
-Read this article to learn how to [enable a managed identity on a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage#enable-managed-identity-on-an-app).
+Read this article to learn how to [enable a managed identity on a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-microsoft-graph-as-app?tabs=azure-powershell%2Ccommand-line#enable-managed-identity-on-app).
 
 ### Step 4: Grant access to Microsoft Graph
 
@@ -69,7 +69,7 @@ When accessing the Microsoft Graph, the managed identity needs to have proper pe
 
 ### Step 5: Visit the web app
 
-Open a browser and navigate to the deployed web app (replace *web-app-name* with the name of your web app): `https://web-app-name.azurewebsites.net`
+Open a browser and navigate to the deployed web app (replace *web-app-name* with the name of your web app): `https://web-app-name.azurewebsites.net`. Once authenticated, select the **Users** button at the center of the page. This will take you to the page where you can see the users data in your tenant via calling Microsoft Graph.
 
 ## About the code
 

@@ -69,7 +69,7 @@ The web app now has the required permissions to access Microsoft Graph as the si
 
 ### Step 5: Visit the web app
 
-Open a browser and navigate to the deployed web app (replace *web-app-name* with the name of your web app): `https://web-app-name.azurewebsites.net`
+Open a browser and navigate to the deployed web app (replace *web-app-name* with the name of your web app): `https://web-app-name.azurewebsites.net`. Once authenticated, select the **Profile** button at the center of the page. This will take you to the page that displays your profile data from Microsoft Graph.
 
 ## About the code
 

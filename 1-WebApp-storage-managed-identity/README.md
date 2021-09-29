@@ -93,7 +93,7 @@ You need to grant your web app access to the storage account before you can crea
 
 ### Step 7: Visit the web app
 
-Open a browser and navigate to the deployed web app (replace *web-app-name* with the name of your web app): `https://web-app-name.azurewebsites.net/`
+Open a browser and navigate to the deployed web app (replace *web-app-name* with the name of your web app): `https://web-app-name.azurewebsites.net/`. Once authenticated, select the **Comments** button at the center of the page. This will take you to the page where you can add to and retrieve from comments in your blob storage.
 
 ## About the code
 
