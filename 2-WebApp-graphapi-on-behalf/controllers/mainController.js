@@ -1,5 +1,5 @@
 // get the name of the app service instance from environment variables
-const appServiceName = process.env[WEBSITE_SITE_NAME];
+const appServiceName = process.env.WEBSITE_SITE_NAME;
 
 exports.getHomePage = (req, res, next) => {
     res.render('home', { isAuthenticated: req.session.isAuthenticated, appServiceName: appServiceName });

@@ -2,7 +2,7 @@ const graphHelper = require('../utils/graphHelper');
 const { DefaultAzureCredential } = require("@azure/identity");
 
 // get the name of the app service instance from environment variables
-const appServiceName = process.env[WEBSITE_SITE_NAME];
+const appServiceName = process.env.WEBSITE_SITE_NAME;
 
 exports.getUsersPage = async(req, res, next) => {
 

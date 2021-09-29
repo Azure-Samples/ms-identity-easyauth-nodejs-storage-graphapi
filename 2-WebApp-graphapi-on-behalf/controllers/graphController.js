@@ -1,5 +1,5 @@
 // get the name of the app service instance from environment variables
-const appServiceName = process.env[WEBSITE_SITE_NAME];
+const appServiceName = process.env.WEBSITE_SITE_NAME;
 
 const graphHelper = require('../utils/graphHelper');
 
