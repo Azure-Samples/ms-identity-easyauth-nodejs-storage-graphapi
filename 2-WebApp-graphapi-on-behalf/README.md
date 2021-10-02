@@ -73,7 +73,7 @@ Open a browser and navigate to the deployed web app (replace *web-app-name* with
 
 ## About the code
 
-This sample is built using the [@azure/identity](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/identity/identity/README.md) and [@azure-samples/msal-express-wrapper](https://github.com/Azure-Samples/msal-express-wrapper) packages for authentication and authorization.
+This sample is built using the [@azure-samples/msal-express-wrapper](https://github.com/Azure-Samples/msal-express-wrapper) package for authentication and authorization, and the [@microsoft/microsoft-graph-client](https://github.com/microsoftgraph/msgraph-sdk-javascript#readme) package for querying Microsoft Graph.
 
 ### Add authentication to your web app
 
