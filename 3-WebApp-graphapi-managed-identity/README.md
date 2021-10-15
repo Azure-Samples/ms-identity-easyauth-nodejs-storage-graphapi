@@ -73,7 +73,7 @@ Open a browser and navigate to the deployed web app (replace *web-app-name* with
 
 ## About the code
 
-This sample is built using the [@azure/identity](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/identity/identity/README.md) and [@azure-samples/msal-express-wrapper](https://github.com/Azure-Samples/msal-express-wrapper) packages for authentication and authorization.
+This sample is built using the [@azure/identity](https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/identity/identity/README.md) and [@azure-samples/microsoft-identity-express](https://github.com/Azure-Samples/microsoft-identity-express) packages for authentication and authorization.
 
 ### Add authentication to your web app
 
@@ -81,7 +81,7 @@ The `signIn` middleware in *routes/mainRoutes.js* receives the App Service authe
 
 ```javascript
     router.get('/login', msid.signIn({
-        successRedirect: '/home',
+        postLoginRedirect: '/home',
     }));
 ```
 
@@ -95,7 +95,7 @@ When the user selects the sign-out button on the navigation bar, the `signOut` m
 
 ```javascript
     router.get('/logout', msid.signOut({
-        successRedirect: '/home',
+        postLogoutRedirect: '/home',
     }));
 ```
 

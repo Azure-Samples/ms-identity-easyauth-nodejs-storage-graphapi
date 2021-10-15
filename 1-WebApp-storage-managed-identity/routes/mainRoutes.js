@@ -13,11 +13,11 @@ module.exports = (msid) => {
     router.get('/home', mainController.getHomePage);
 
     router.get('/login', msid.signIn({
-        successRedirect: '/home',
+        postLoginRedirect: '/home',
     }));
 
     router.get('/logout', msid.signOut({
-        successRedirect: '/home',
+        postLogoutRedirect: '/home',
     }));
 
     router.get('/id', msid.isAuthenticated(), mainController.getIdPage);
