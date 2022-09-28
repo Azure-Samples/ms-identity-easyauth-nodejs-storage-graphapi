@@ -1,10 +1,10 @@
 ---
+page_type: sample
+description: "Learn how to sign-in users to your web app, call Azure storage, and call Microsoft Graph."
 languages:
 - javascript
 - powershell
 - html
-page_type: sample
-description: "Learn how to sign-in users to your web app, call Azure storage, and call Microsoft Graph."
 products:
 - nodejs
 - express

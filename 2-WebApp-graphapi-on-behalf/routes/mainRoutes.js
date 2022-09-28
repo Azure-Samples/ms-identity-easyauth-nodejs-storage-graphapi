@@ -22,19 +22,16 @@ module.exports = (msid) => {
 
     router.get('/id', msid.isAuthenticated(), mainController.getIdPage);
 
-    router.get('/profile', 
-        msid.isAuthenticated(), 
+    router.get('/profile',
+        msid.isAuthenticated(),
         msid.getToken({
             resource: {
                 endpoint: "https://graph.microsoft.com/v1.0/me",
                 scopes: ["User.Read"]
             }
-        }), 
+        }),
         graphController.getProfilePage
     );
-
-    // error
-    router.get('/error', (req, res) => res.redirect('/500.html'));
 
     // unauthorized
     router.get('/unauthorized', (req, res) => res.redirect('/401.html'));

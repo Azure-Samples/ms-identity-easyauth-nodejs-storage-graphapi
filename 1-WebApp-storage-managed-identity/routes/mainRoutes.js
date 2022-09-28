@@ -28,9 +28,6 @@ module.exports = (msid) => {
 
     router.delete('/comments', msid.isAuthenticated(), storageController.deleteCommentsPage);
 
-    // error
-    router.get('/error', (req, res) => res.redirect('/500.html'));
-
     // unauthorized
     router.get('/unauthorized', (req, res) => res.redirect('/401.html'));
 
