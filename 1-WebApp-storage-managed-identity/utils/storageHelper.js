@@ -11,9 +11,8 @@ async function getBlobs(accountName, containerName) {
 
     const containerClient = blobServiceClient.getContainerClient(containerName);
 
-    await containerClient.createIfNotExists();
-
     try {
+        await containerClient.createIfNotExists();
 
         let blobs = containerClient.listBlobsFlat();
         let downloadedList = {};

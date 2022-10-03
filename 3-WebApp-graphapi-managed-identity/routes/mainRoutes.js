@@ -24,9 +24,6 @@ module.exports = (msid) => {
 
     router.get('/users', msid.isAuthenticated(), graphController.getUsersPage);
 
-    // error
-    router.get('/error', (req, res) => res.redirect('/500.html'));
-
     // unauthorized
     router.get('/unauthorized', (req, res) => res.redirect('/401.html'));
 
