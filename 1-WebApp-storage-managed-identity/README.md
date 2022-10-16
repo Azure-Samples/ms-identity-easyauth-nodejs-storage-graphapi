@@ -20,7 +20,7 @@ products:
 
 ### Overview
 
-This sample demonstrates a Node.js & Express web app that uses authentication to limit access to users in your organization​ and then calls Azure storage as the web app (not as the signed-in user). The web app authenticates users and also uploads, displays, and deletes text blobs in Azure storage. This sample is a companion to the [Access Azure Storage from a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage) tutorial on **docs.microsoft.com**.
+This sample demonstrates a Node.js & Express web app that uses authentication to limit access to users in your organization​ and then calls Azure storage as the web app (not as the signed-in user). The web app authenticates users and also uploads, displays, and deletes text blobs in Azure storage. This sample is a companion to the [Access Azure Storage from a web app](https://learn.microsoft.com/azure/active-directory/develop/multi-service-web-app-access-storage) tutorial on **docs.microsoft.com**.
 
 ### Scenario
 
@@ -54,7 +54,7 @@ Create a storage account and Blob Storage container for the web app to access.
 
 Every storage account must belong to an Azure resource group. A resource group is a logical container for grouping your Azure services. When you create a storage account, you have the option to either create a new resource group or use an existing resource group.
 
-This article shows how to [create a new resource group, a storage account, and a Blob Storage container](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage#create-a-storage-account-and-blob-storage-container).
+This article shows how to [create a new resource group, a storage account, and a Blob Storage container](https://learn.microsoft.com/azure/active-directory/develop/multi-service-web-app-access-storage?tabs=azure-portal%2Cprogramming-language-csharp#create-a-storage-account-and-blob-storage-container).
 
 Make sure you take note of the storage account name and the Blob Storage container name, which you will need in step (4).
 
@@ -69,7 +69,7 @@ This project has one web app project. To deploy it to Azure App Service, you'll 
 
 For information on how to do this from VS Code using the [App Service Extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureappservice), see the [tutorial](https://docs.microsoft.com/azure/developer/javascript/tutorial/deploy-nodejs-azure-app-service-with-visual-studio-code?tabs=bash). Use the same resource group that you used in step 2 instead of creating a new resource group.
 
-After you've deployed the web app to Azure, [configure the Azure App Service authentication/authorization module](https://docs.microsoft.com/azure/app-service/scenario-secure-app-authentication-app-service).  Also verify that only users in your organization can access the web site.
+After you've deployed the web app to Azure, [configure the Azure App Service authentication/authorization module](https://learn.microsoft.com/azure/active-directory/develop/multi-service-web-app-authentication-app-service).  Also verify that only users in your organization can access the web site.
 
 ### Step 4: Configure the App Service to use your Azure storage account and blob container
 
@@ -85,11 +85,11 @@ Wait for a few minutes for your changes on **App Service** to take effect.
 
 ### Step 5: Enable managed identity on an app
 
-Read this article to learn how to [enable a managed identity on a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage#enable-managed-identity-on-an-app).
+Read this article to learn how to [enable a managed identity on a web app](https://learn.microsoft.com/azure/active-directory/develop/multi-service-web-app-access-storage#enable-managed-identity-on-an-app).
 
 ### Step 6: Grant access to the storage account
 
-You need to grant your web app access to the storage account before you can create, read, or delete blobs. In a previous step, you configured the web app running on App Service with a managed identity. Using Azure RBAC, you can give the managed identity access to another resource, just like any security principal. The Storage Blob Data Contributor role gives the web app (represented by the system-assigned managed identity) read, write, and delete access to the blob container and data. Read this article to learn how to [grant access to the storage account](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage#grant-access-to-the-storage-account).
+You need to grant your web app access to the storage account before you can create, read, or delete blobs. In a previous step, you configured the web app running on App Service with a managed identity. Using Azure RBAC, you can give the managed identity access to another resource, just like any security principal. The Storage Blob Data Contributor role gives the web app (represented by the system-assigned managed identity) read, write, and delete access to the blob container and data. Read this article to learn how to [grant access to the storage account](https://learn.microsoft.com/azure/active-directory/develop/multi-service-web-app-access-storage?tabs=azure-portal%2Cprogramming-language-csharp#grant-access-to-the-storage-account).
 
 ### Step 7: Visit the web app
 
@@ -218,4 +218,4 @@ exports.postCommentsPage = async(req, res, next) => {
 
 ## Resources
 
-Read the [Access Azure Storage from a web app](https://docs.microsoft.com/azure/app-service/scenario-secure-app-access-storage) tutorial.
+Read the [Access Azure Storage from a web app](https://learn.microsoft.com/azure/active-directory/develop/multi-service-web-app-access-storage) tutorial.
