@@ -20,7 +20,7 @@ products:
 
 ### Overview
 
-This sample demonstrates an Node.js & Express web app that uses authentication to limit access to users in your organization​ and then calls Microsoft Graph as the app. The web app authenticates a user and displays some of the user's profile information. The web app then displays a list of users in the Azure Active Directory tenant. This sample is a companion to the [Access Microsoft Graph from a secured app as the app](https://learn.microsoft.com/en-us/azure/active-directory/develop/multi-service-web-app-access-microsoft-graph-as-app) tutorial on docs.microsoft.com.
+This sample demonstrates an Node.js & Express web app that uses authentication to limit access to users in your organization​ and then calls Microsoft Graph as the app. The web app authenticates a user and displays some of the user's profile information. The web app then displays a list of users in the Azure Active Directory tenant. This sample is a companion to the [Access Microsoft Graph from a secured app as the app](https://learn.microsoft.com/azure/active-directory/develop/multi-service-web-app-access-microsoft-graph-as-app) tutorial on docs.microsoft.com.
 
 ### Scenario
 
