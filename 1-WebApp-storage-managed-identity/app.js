@@ -19,14 +19,13 @@ const SERVER_PORT = process.env.PORT || 3000;
 const app = express();
 
 const sessionConfig = {
-    name: "SESSION_COOKIE_NAME",
     secret: 'ENTER_YOUR_SECRET_HERE',
     resave: false,
     saveUninitialized: false,
     cookie: {
         sameSite: 'lax',
-        httpOnly: true, // set this to true on production
-        secure: false, // set this to true when running on HTTPS,
+        httpOnly: true,
+        secure: false, // set this to true on production
     }
 }
 
@@ -59,7 +58,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 const appSettings = {
-    tenantId: "b0a97cb-febb-4553-b51d-daf462e5033a", // Enter the tenant info here,
+    tenantId: "common", // Enter the tenant info here,
     clientId: process.env.WEBSITE_AUTH_CLIENT_ID, // Enter the client Id here,
     clientSecret: process.env.MICROSOFT_PROVIDER_AUTHENTICATION_SECRET, // Enter the client secret here,
     redirectUri: "/.auth/login/aad/callback", // Enter the redirect route here

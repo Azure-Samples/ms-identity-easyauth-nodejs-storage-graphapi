@@ -6,7 +6,11 @@ const graphHelper = require('../utils/graphHelper');
 exports.getProfilePage = async(req, res, next) => {
 
     try {
-        const graphClient = graphHelper.getAuthenticatedClient(req.session.protectedResources["graphAPI"].accessToken);
+        const accessToken = await req.msid.acquireToken({
+            scopes: ["Mail.Read"]
+        })(req, res, next);
+        
+        const graphClient = graphHelper.getAuthenticatedClient(accessToken);
 
         const profile = await graphClient
             .api('/me')

@@ -57,4 +57,7 @@ router.delete(
     storageController.deleteCommentsPage
 );
 
+// 404
+router.get('*', (req, res) => res.status(404).redirect('/404.html'));
+
 module.exports = router;

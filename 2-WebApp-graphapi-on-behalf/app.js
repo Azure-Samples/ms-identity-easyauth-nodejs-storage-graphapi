@@ -6,8 +6,9 @@
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
-const MsIdExpress = require('microsoft-identity-express');
+const cookieParser = require('cookie-parser');
 
+const AuthProvider = require('./auth/AuthProvider');
 const mainRouter = require('./routes/mainRoutes');
 
 // App constants
@@ -16,60 +17,58 @@ const SERVER_PORT = process.env.PORT || 3000;
 // initialize express
 const app = express();
 
-/**
- * In App Service, SSL termination happens at the network load balancers, so all HTTPS requests reach your app as unencrypted HTTP requests.
- * The line below is needed for getting the correct absolute URL for redirectUri configuration. For more information, visit: 
- * https://docs.microsoft.com/azure/app-service/configure-language-nodejs?pivots=platform-linux#detect-https-session
- */
-app.set('trust proxy', 1)
+const sessionConfig = {
+    secret: 'ENTER_YOUR_SECRET_HERE',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        sameSite: 'lax',
+        httpOnly: true,
+        secure: false, // set this to true on production
+    }
+}
+
+if (app.get('env') === 'production') {
+
+    /**
+     * In App Service, SSL termination happens at the network load balancers, so all HTTPS requests reach your app as unencrypted HTTP requests.
+     * The line below is needed for getting the correct absolute URL for redirectUri configuration. For more information, visit:
+     * https://docs.microsoft.com/azure/app-service/configure-language-nodejs?pivots=platform-linux#detect-https-session
+     */
+
+    app.set('trust proxy', 1) // trust first proxy e.g. App Service
+    sessionConfig.cookie.secure = true // serve secure cookies on HTTPS
+}
 
 /**
  * Using express-session middleware. Be sure to familiarize yourself with available options
  * and set them as desired. Visit: https://www.npmjs.com/package/express-session
  */
-app.use(session({
-    secret: 'ENTER_YOUR_SECRET_HERE',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: true, // set this to true on production
-    }
-}));
-
-app.set('views', path.join(__dirname, './views'));
-app.set('view engine', 'ejs');
-
-app.use('/css', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')));
-app.use('/js', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/js')));
+app.use(session(sessionConfig));
 
 app.use(express.static(path.join(__dirname, './public')));
-
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, './views'));
+app.use('/css', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')));
+app.use('/js', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/js')));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cookieParser());
 
 const appSettings = {
-    appCredentials: {
-        clientId: process.env.WEBSITE_AUTH_CLIENT_ID, // Enter the client Id here,
-        tenantId: "common", // Enter the tenant info here,
-        clientSecret: process.env.MICROSOFT_PROVIDER_AUTHENTICATION_SECRET // Enter the client secret here,
-    },
-    authRoutes: {
-        redirect: "/.auth/login/aad/callback", // Enter the redirect URI here
-        unauthorized: "/unauthorized" // enter the relative path to unauthorized route
-    },
-    protectedResources: {
-        graphAPI: {
-            endpoint: "https://graph.microsoft.com/v1.0/me", // resource endpoint
-            scopes: ["User.Read"] // resource scopes
-        },
-    },
-}
+    tenantId: "common", // Enter the tenant info here,
+    clientId: process.env.WEBSITE_AUTH_CLIENT_ID, // Enter the client Id here,
+    clientSecret: process.env.MICROSOFT_PROVIDER_AUTHENTICATION_SECRET, // Enter the client secret here,
+    redirectUri: "/.auth/login/aad/callback", // Enter the redirect route here
+};
 
-const msid = new MsIdExpress.WebAppAuthClientBuilder(appSettings).build();
+/**
+ * Initialize the AuthProvider class with the app settings above.
+ */
+const msid = new AuthProvider(appSettings);
+app.use(msid.initialize()); // add the msid middleware
 
-app.use(msid.initialize());
-
-app.use(mainRouter(msid));
+app.use(mainRouter);
 
 // error handler
 app.use(function (err, req, res, next) {
@@ -83,5 +82,3 @@ app.use(function (err, req, res, next) {
 });
 
 app.listen(SERVER_PORT, () => console.log(`Node EasyAuth sample app listening on port ${SERVER_PORT}!`));
-
-module.exports = appSettings;
