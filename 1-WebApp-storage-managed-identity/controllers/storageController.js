@@ -2,7 +2,6 @@ const storageClient = require('../utils/storageHelper');
 
 // get the name of the app service instance from environment variables
 const appServiceName = process.env.WEBSITE_SITE_NAME;
-
 const accountName = process.env.STORAGE_ACCOUNT_NAME;
 const containerName = process.env.BLOB_CONTAINER_NAME;
 
