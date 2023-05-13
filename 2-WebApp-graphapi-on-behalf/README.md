@@ -65,7 +65,7 @@ Now that you've enabled authentication and authorization on your web app, the we
 
 ### Step 4: Configure App Service to return a usable access token
 
-The web app now has the required permissions to access Microsoft Graph as the signed-in user. In this step, you configure App Service authentication and authorization to give you a usable access token for accessing Microsoft Graph. For more information, read [Configure App Service to return a usable access token](https://learn.microsoft.com/en-us/azure/active-directory/develop/multi-service-web-app-access-microsoft-graph-as-user#configure-app-service-to-return-a-usable-access-token) in the tutorial on **docs.microsoft.com**.
+The web app now has the required permissions to access Microsoft Graph as the signed-in user. In this step, you configure App Service authentication and authorization to give you a usable access token for accessing Microsoft Graph. For more information, read [Configure App Service to return a usable access token](https://learn.microsoft.com/azure/active-directory/develop/multi-service-web-app-access-microsoft-graph-as-user#configure-app-service-to-return-a-usable-access-token) in the tutorial on **docs.microsoft.com**.
 
 ### Step 5: Visit the web app
 
@@ -73,30 +73,65 @@ Open a browser and navigate to the deployed web app (replace *web-app-name* with
 
 ## About the code
 
-This sample is built using the [@azure-samples/microsoft-identity-express](https://github.com/Azure-Samples/microsoft-identity-express) package for authentication and authorization, and the [@microsoft/microsoft-graph-client](https://github.com/microsoftgraph/msgraph-sdk-javascript#readme) package for querying Microsoft Graph.
+This sample is built using the [@azure/msal-node](https://github.com/AzureAD/microsoft-authentication-library-for-js/tree/dev/lib/msal-node) package for authentication and authorization, and the [@microsoft/microsoft-graph-client](https://github.com/microsoftgraph/msgraph-sdk-javascript#readme) package for querying Microsoft Graph.
 
 ### Add authentication to your web app
 
-The `signIn` middleware in *routes/mainRoutes.js* receives the App Service authentication headers from the incoming request, and then initializes a session variable with the user account, which indicates that the user has successfully signed-in.
+The authentication logic in this sample is encapsulated in the **AuthProvider** class. In *app.js*, we instantiate this class and initialize the auth middleware:
 
 ```javascript
-    router.get('/login', msid.signIn({
-        postLoginRedirect: '/home',
-    }));
+const express = require('express');
+const AuthProvider = require('./auth/AuthProvider');
+
+const app = express();
+
+/**
+ * Initialize the AuthProvider class with the settings provided.
+ */
+const msid = new AuthProvider({
+    tenantId: "common", // Enter the tenant info here,
+    clientId: process.env.WEBSITE_AUTH_CLIENT_ID, // Enter the client Id here,
+    clientSecret: process.env.MICROSOFT_PROVIDER_AUTHENTICATION_SECRET, // Enter the client secret here,
+    redirectUri: "/.auth/login/aad/callback", // Enter the redirect route here
+});
+
+app.use(msid.initialize()); // add the msid middleware
 ```
 
-The `isAuthenticated` middleware checks the user's session variable to make sure the user is still signed in during route transitions:
+The `login` middleware in *routes/mainRoutes.js* receives the App Service authentication headers from the incoming request, and then initializes a session variable with the user account, which indicates that the user has successfully signed-in.
 
 ```javascript
-router.get('/id', msid.isAuthenticated(), mainController.getIdPage);
+    router.get(
+        '/login', 
+        (req, res, next) => {
+        return req.msid.login({
+            postLoginRedirectUri: '/',
+        })(req, res, next);
+    });
 ```
 
-When the user selects the sign-out button on the navigation bar, the `signOut` middleware wipes clean the user's session variable, and redirects the app to home page:
+The `ensureAuthenticated` middleware checks the user's session variable to make sure the user signed in, and if not, attempts to sign-in the user.
 
 ```javascript
-    router.get('/logout', msid.signOut({
-        postLogoutRedirect: '/home',
-    }));
+    router.get(
+        '/id', 
+        (req, res, next) => {
+            return req.msid.ensureAuthenticated()(req, res, next);
+        }, 
+        mainController.getIdPage
+    );
+```
+
+When the user selects the sign-out button on the navigation bar, the `logout` middleware wipes clean the user's session variable, and redirects the app to home page:
+
+```javascript
+    router.get(
+        '/logout', 
+        (req, res, next) => {
+        return req.msid.logout({
+            postLogoutRedirectUri: '/',
+        })(req, res, next);
+    });
 ```
 
 ### Display name of the signed-in user
@@ -158,9 +193,12 @@ The sample app gets the user's access token from the incoming requests header, w
 const graphHelper = require('../utils/graphHelper');
 
 exports.getProfilePage = async(req, res, next) => {
-
     try {
-        const graphClient = graphHelper.getAuthenticatedClient(req.session.protectedResources["graphAPI"].accessToken);
+        const accessToken = await req.msid.acquireToken({
+            scopes: ["Mail.Read"]
+        })(req, res, next);
+        
+        const graphClient = graphHelper.getAuthenticatedClient(accessToken);
 
         const profile = await graphClient
             .api('/me')

@@ -4,7 +4,6 @@ const appServiceName = process.env.WEBSITE_SITE_NAME;
 const graphHelper = require('../utils/graphHelper');
 
 exports.getProfilePage = async(req, res, next) => {
-
     try {
         const accessToken = await req.msid.acquireToken({
             scopes: ["Mail.Read"]

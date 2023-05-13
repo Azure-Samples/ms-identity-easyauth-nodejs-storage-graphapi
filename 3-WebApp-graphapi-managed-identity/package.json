@@ -11,13 +11,15 @@
   "license": "MIT",
   "dependencies": {
     "@azure/identity": "^3.0.0",
+    "@azure/msal-node": "^1.17.2",
     "@microsoft/microsoft-graph-client": "^3.0.2",
+    "axios": "^1.4.0",
     "bootstrap": "^4.5.3",
+    "cookie-parser": "^1.4.6",
     "ejs": "^3.0.1",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
-    "isomorphic-fetch": "^3.0.0",
-    "microsoft-identity-express": "git+https://github.com/Azure-Samples/microsoft-identity-express"
+    "isomorphic-fetch": "^3.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.2"
