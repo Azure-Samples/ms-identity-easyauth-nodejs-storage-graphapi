@@ -3,41 +3,45 @@ const express = require('express');
 const mainController = require('../controllers/mainController');
 const graphController = require('../controllers/graphController');
 
-module.exports = (msid) => {
-    // initialize router
-    const router = express.Router();
+// initialize router
+const router = express.Router();
 
-    // app routes
-    router.get('/', (req, res, next) => res.redirect('/home'));
+// app routes
+router.get('/', mainController.getHomePage);
 
-    router.get('/home', mainController.getHomePage);
+router.get(
+    '/login', 
+    (req, res, next) => {
+    return req.msid.login({
+        postLoginRedirectUri: '/',
+    })(req, res, next);
+});
 
-    router.get('/login', msid.signIn({
-        postLoginRedirect: '/home',
-    }));
+router.get(
+    '/logout', 
+    (req, res, next) => {
+    return req.msid.logout({
+        postLogoutRedirectUri: '/',
+    })(req, res, next);
+});
 
-    router.get('/logout', msid.signOut({
-        postLogoutRedirect: '/home',
-    }));
+router.get(
+    '/id', 
+    (req, res, next) => {
+        return req.msid.ensureAuthenticated()(req, res, next);
+    }, 
+    mainController.getIdPage
+);
 
-    router.get('/id', msid.isAuthenticated(), mainController.getIdPage);
+router.get(
+    '/profile', 
+    (req, res, next) => {
+        return req.msid.ensureAuthenticated()(req, res, next);
+    }, 
+    graphController.getProfilePage
+);
 
-    router.get('/profile',
-        msid.isAuthenticated(),
-        msid.getToken({
-            resource: {
-                endpoint: "https://graph.microsoft.com/v1.0/me",
-                scopes: ["User.Read"]
-            }
-        }),
-        graphController.getProfilePage
-    );
+// 404
+router.get('*', (req, res) => res.status(404).redirect('/404.html'));
 
-    // unauthorized
-    router.get('/unauthorized', (req, res) => res.redirect('/401.html'));
-
-    // 404
-    router.get('*', (req, res) => res.status(404).redirect('/404.html'));
-
-    return router;
-};
+module.exports = router;
